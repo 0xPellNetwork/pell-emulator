@@ -1,0 +1,39 @@
+name: e2e
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure GitHub credentials
+        run: git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+
+      - name: Build and Start Docker Services
+        run: |
+          make docker-build-all
+          make docker-emulator-up
+        working-directory: test/e2e
+
+      - name: Check Docker Service Status
+        run: make docker-all-status
+        working-directory: test/e2e
+
+      - name: Test Services
+        run: make docker-test-up
+        working-directory: test/e2e
+
+      - name: Stop Docker Services (always)
+        run: make docker-all-down
+        working-directory: test/e2e
+        if: always()

@@ -1,0 +1,27 @@
+name: pelle-mulator
+
+services:
+  emulator:
+    image: pellnetwork/pell-emulator:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - GITHUB_TOKEN=$GITHUB_TOKEN
+      secrets:
+        - github_token
+    environment:
+      - PORT=${PORT}
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - ETH_WS_URL=${ETH_WS_URL}
+    ports:
+      - "${HOST_SERVER_PORT:-9090}:${SERVER_PORT:-9090}"
+    volumes:
+      - "${HOST_PELL_EMULATOR_HOME:-./.pell-emulator}:${PELL_EMULATOR_HOME:-/root/.pell-emulator}"
+    entrypoint: [ "pell-emulator", "start", "--home", "${PELL_EMULATOR_HOME}" ]
+
+secrets:
+  github_token:
+    file: ./.env.github_token.txt

@@ -1,0 +1,66 @@
+name: pell-emulator-e2e
+services:
+  test:
+    image: pell-emulator-e2e-emulator:latest
+    environment:
+      - PORT=${PORT}
+      - ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
+      - ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+    depends_on:
+      emulator:
+        condition: service_started
+    volumes:
+      - ./docker/test/scripts:/root/scripts
+    entrypoint: [ "bash", "/root/scripts/test.sh" ]
+  emulator:
+    image: pell-emulator-e2e-emulator:latest
+    environment:
+      - PORT=${PORT}
+      - ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
+      - ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+    ports:
+      - "${HOST_SERVER_PORT:-9090}:${SERVER_PORT:-9090}"
+    volumes:
+      - ./docker/emulator/scripts:/root/scripts
+    entrypoint: [ "bash", "./scripts/start_emulator.sh" ]
+    depends_on:
+      hardhat:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/emulator_initialized" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  hardhat:
+    image: pell-emulator-e2e-hardhat:latest
+    command: [ "bash", "./scripts/docker_init.sh" ]
+    environment:
+      - LOCALHOST_URL=http://eth:8545
+    volumes:
+      - ./docker/contracts/scripts:/root/scripts
+    depends_on:
+      eth:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/contracts_deployed_completed" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  eth:
+    image: ghcr.io/foundry-rs/foundry:latest
+    ports:
+      - "8545:8545"
+    entrypoint: [ "anvil", "--host", "0.0.0.0", "--chain-id", "1337", "--state", "/tmp/anvil.state.json" ]
+    platform: linux/amd64

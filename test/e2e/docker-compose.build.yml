@@ -1,0 +1,21 @@
+name: pell-emulator-e2e
+
+services:
+  hardhat:
+    build:
+      context: .
+      dockerfile: ./docker/contracts/Dockerfile
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - GITHUB_TOKEN=$GITHUB_TOKEN
+        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.2.32}
+  emulator:
+    build:
+      context: ../..
+      dockerfile: ./test/e2e/docker/emulator/Dockerfile
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - GITHUB_TOKEN=$GITHUB_TOKEN
+        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.1.12}
