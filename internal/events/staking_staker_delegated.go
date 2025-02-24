@@ -57,7 +57,6 @@ func NewEventStakingStakerDelegated(
 func (e *EventStakingStakerDelegated) process(
 	ctx context.Context, event *delegationmanager.DelegationManagerStakerDelegated,
 ) error {
-
 	e.logger.Info("received event",
 		"Staker", event.Staker,
 		"Operator", event.Operator,
@@ -103,7 +102,6 @@ func (e *EventStakingStakerDelegated) Init(ctx context.Context) error {
 //nolint:nolintlint
 func (e *EventStakingStakerDelegated) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
-
 	go func(ctx context.Context) {
 		for {
 			select {

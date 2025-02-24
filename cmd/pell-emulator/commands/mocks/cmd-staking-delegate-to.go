@@ -10,7 +10,6 @@ import (
 )
 
 func init() {
-
 	chainflags.EmulatorFlagOperatorAddress.AddToCmdFlag(EmulatorMocksCmdStakingDelegateToCmd)
 
 	KeyFileFlag.AddToCmdFlag(EmulatorMocksCmdStakingDelegateToCmd)

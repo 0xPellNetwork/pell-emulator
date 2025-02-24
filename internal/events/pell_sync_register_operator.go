@@ -58,7 +58,6 @@ func NewEventRegistryRouterSyncRegisterOperator(
 func (e *EventRegistryRouterSyncRegisterOperator) process(
 	ctx context.Context, event *registryrouter.RegistryRouterSyncRegisterOperator,
 ) error {
-
 	e.logger.Info("received event",
 		"Operator", event.Operator,
 		"OperatorID", event.OperatorId,
@@ -130,7 +129,6 @@ func (e *EventRegistryRouterSyncRegisterOperator) Init(ctx context.Context) erro
 
 func (e *EventRegistryRouterSyncRegisterOperator) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
-
 	go func(ctx context.Context) {
 		for {
 			select {

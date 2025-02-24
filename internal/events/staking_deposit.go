@@ -57,7 +57,6 @@ func NewEventStakingDeposit(
 func (e *EventStakingDeposit) process(
 	ctx context.Context, event *strategymanager.StrategyManagerDeposit,
 ) error {
-
 	e.logger.Info("received event",
 		"Staker", event.Staker,
 		"Token", event.Token,
@@ -101,7 +100,6 @@ func (e *EventStakingDeposit) Init(ctx context.Context) error {
 
 func (e *EventStakingDeposit) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
-
 	go func(ctx context.Context) {
 		for {
 			select {

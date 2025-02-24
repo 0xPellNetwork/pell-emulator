@@ -55,7 +55,6 @@ func NewEventStakingWithdrawalQueued(
 func (e *EventStakingWithdrawalQueued) process(
 	ctx context.Context, event *delegationmanager.DelegationManagerWithdrawalQueued,
 ) error {
-
 	e.logger.Info("received event",
 		"WithdrawalRoot", event.WithdrawalRoot,
 		"Withdrawal", event.Withdrawal,
@@ -109,7 +108,6 @@ func (e *EventStakingWithdrawalQueued) Init(ctx context.Context) error {
 
 func (e *EventStakingWithdrawalQueued) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
-
 	go func(ctx context.Context) {
 		for {
 			select {

@@ -54,7 +54,6 @@ func NewEventStakingStakerUndelegated(
 func (e *EventStakingStakerUndelegated) process(
 	ctx context.Context, event *delegationmanager.DelegationManagerStakerUndelegated,
 ) error {
-
 	e.logger.Info("received event",
 		"Staker", event.Staker,
 		"Operator", event.Operator,

@@ -112,7 +112,6 @@ func (e *EventRegistryRouterSyncCreateGroup) Init(ctx context.Context) error {
 
 func (e *EventRegistryRouterSyncCreateGroup) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
-
 	go func(ctx context.Context) {
 		for {
 			select {

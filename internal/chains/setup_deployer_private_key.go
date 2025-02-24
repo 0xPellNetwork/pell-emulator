@@ -1,7 +1,7 @@
 package chains
 
 import (
-	osecdsa "crypto/ecdsa"
+	stdecdsa "crypto/ecdsa"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -29,7 +29,7 @@ func (cb *ChainBindings) setupDeployerPrivateKey(keyFilePath string) error {
 	}
 
 	publicKey := pk.Public()
-	publicKeyECDSA, ok := publicKey.(*osecdsa.PublicKey)
+	publicKeyECDSA, ok := publicKey.(*stdecdsa.PublicKey)
 	if !ok {
 		return errors.New("error casting public key to ECDSA public key")
 	}

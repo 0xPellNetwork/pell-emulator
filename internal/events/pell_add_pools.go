@@ -18,9 +18,6 @@ import (
 	"github.com/0xPellNetwork/pell-emulator/libs/utils"
 )
 
-// 			EventName:    "SyncAddPools",
-//			Contractname: "PellRegistryRouter",
-
 type EventRegistryRouterSyncAddPools struct {
 	BaseEvent
 	evtCh chan *stakeregistryrouter.StakeRegistryRouterSyncAddPools
