@@ -77,16 +77,7 @@ func (e *EventCentralSchedulerToPell) Init(ctx context.Context) error {
 }
 
 func (e *EventCentralSchedulerToPell) Listen(ctx context.Context) error {
-
 	e.logger.Info("Listening for events")
-
-	sub, err := e.wsBindings.PellRegistryInteractor.WatchRegisterCentralSchedulerToPell(&gethbind.WatchOpts{}, e.evtCh)
-	if err != nil {
-		e.logger.Error("Failed to subscribe to events", "error", err)
-		return err
-	}
-	e.logger.Info("subscribed to events")
-
 	go func(ctx context.Context) {
 		for {
 			select {
@@ -95,12 +86,12 @@ func (e *EventCentralSchedulerToPell) Listen(ctx context.Context) error {
 				if err != nil {
 					e.logger.Error("Failed to process to events:", "error", err)
 				}
-			case err := <-sub.Err():
+			case err := <-e.evtSub.Err():
 				utils.LogSubError(e.logger, err)
 				time.Sleep(1 * time.Second)
 			case <-ctx.Done():
 				e.logger.Info("received unsubscribe signal, shutting down...")
-				sub.Unsubscribe()
+				e.evtSub.Unsubscribe()
 				close(e.evtCh)
 				return
 			default:
@@ -122,7 +113,6 @@ func (e *EventCentralSchedulerToPell) process(
 
 	e.logger.Info("Processing event",
 		"txHash", txHash,
-		"event.Hex", event.Raw.TxHash.Hex,
 		"event.blockNumber", event.Raw.BlockNumber,
 		"startBlockNumber", startBlockNumber,
 		"endBlockNumber", endBlockNumber,

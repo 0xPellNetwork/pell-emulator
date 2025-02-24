@@ -2,7 +2,7 @@ package chains
 
 import (
 	"context"
-	osecdsa "crypto/ecdsa"
+	stdecdsa "crypto/ecdsa"
 	"math/big"
 
 	"github.com/0xPellNetwork/pell-emulator/config"
@@ -14,7 +14,7 @@ import (
 var (
 	deployerAddress      = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 	defaultDeployerPkHex = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-	deployerPrivKeyPair  *osecdsa.PrivateKey
+	deployerPrivKeyPair  *stdecdsa.PrivateKey
 )
 
 type ChainBindings struct {

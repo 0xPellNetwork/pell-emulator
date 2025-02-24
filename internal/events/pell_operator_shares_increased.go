@@ -56,7 +56,6 @@ func (e *EventPellDelegationManagerOperatorSharesIncreased) process(
 	ctx context.Context,
 	event *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased,
 ) error {
-
 	e.logger.Info("received event",
 		"ChainId", event.ChainId,
 		"Operator", event.Operator,
