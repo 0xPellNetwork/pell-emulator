@@ -21,10 +21,19 @@ function create_registry_router {
   ## Create registry router
   # TODO(jimmy): use interactor instead of pelldvs client
   REGISTRY_ROUTER_ADDRESS_FILE="/root/RegistryRouterAddress.json"
+  REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
+
+  # required registry router factory address
+  if [ -z "$REGISTRY_ROUTER_FACTORY_ADDRESS" ]; then
+    echo "REGISTRY_ROUTER_FACTORY_ADDRESS is required"
+    exit 1
+  fi
+
   pelldvs client dvs create-registry-router \
     --home $PELLDVS_HOME \
     --rpc-url $ETH_RPC_URL \
     --from admin \
+    --registry-router-factory $REGISTRY_ROUTER_FACTORY_ADDRESS \
     --initial-owner $ADMIN_ADDRESS \
     --dvs-chain-approver $ADMIN_ADDRESS \
     --churn-approver $ADMIN_ADDRESS \

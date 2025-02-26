@@ -12,6 +12,13 @@ function load_defaults {
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
 
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-0}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-1000}
+
+  export CHAIN_ID=${CHAIN_ID:-1337}
+  export SERVICE_CHAIN_ID=${SERVICE_CHAIN_ID:-1337}
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-http://eth:8545}
+
   source "$(dirname "$0")/utils.sh"
 }
 
@@ -30,40 +37,59 @@ function init_pelldvs_config {
   update-config() {
     KEY="$1"
     VALUE="$2"
-    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" ~/.pelldvs/config/config.toml
+    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" $PELLDVS_HOME/config/config.toml
   }
 
   ## update config
   REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
   PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
   PELL_DVS_DIRECTORY=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDVSDirectory-Proxy.json" | jq -r .address)
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
 
   update-config rpc_url "$ETH_RPC_URL"
-  update-config pell_registry_router_factory_address "$REGISTRY_ROUTER_FACTORY_ADDRESS"
-  update-config pell_delegation_manager_address "$PELL_DELEGATION_MNAGER"
-  update-config pell_dvs_directory_address "$PELL_DVS_DIRECTORY"
-  update-config pell_registry_router_address "$REGISTRY_ROUTER_ADDRESS"
   update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
-  
 
-  ## FIXME: operator_bls_private_key_store_path should be in the config template. 
+  ## FIXME: operator_bls_private_key_store_path should be in the config template.
   ## FIXME: don't use absolute path for key
-  if ! grep -q "operator_bls_private_key_store_path" "$PELLDVS_HOME/config/config.toml"; then
-    echo "operator_bls_private_key_store_path = \"$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json\"" >> $PELLDVS_HOME/config/config.toml
-  else
-    update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
-  fi
+  update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
 
   ## FIXME: operator_ecdsa_private_key_store_path should be in the config template.
   ## FIXME: don't use absolute path for key
-  if ! grep -q "operator_ecdsa_private_key_store_path" "$PELLDVS_HOME/config/config.toml"; then
-    echo "operator_ecdsa_private_key_store_path = \"$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json\"" >> $PELLDVS_HOME/config/config.toml
-  else
-    update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
-  fi
+  update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
 
-#  ## FIXME: why should we use chain.detail.json?
-#  scp dvs://$PELLDVS_HOME/config/chain.detail.json $PELLDVS_HOME/config/chain.detail.json
+  update-config interfactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
+
+  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  DVS_OPERATOR_INFO_PROVIDER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorInfoProvider.json" | jq -r .address)
+  DVS_OPERATOR_INDEX_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
+
+  cat <<EOF > $PELLDVS_HOME/config/interactor_config.json
+{
+    "rpc_url": "$ETH_RPC_URL",
+    "chain_id": $CHAIN_ID,
+    "indexer_start_height": $AGGREGATOR_INDEXER_START_HEIGHT,
+    "indexer_batch_size": $AGGREGATOR_INDEXER_BATCH_SIZE,
+    "contract_config": {
+      "pell_registry_router_factory": "$REGISTRY_ROUTER_FACTORY_ADDRESS",
+    	"pell_dvs_directory": "$PELL_DVS_DIRECTORY",
+    	"pell_delegation_manager": "$PELL_DELEGATION_MNAGER",
+    	"pell_registry_router": "$REGISTRY_ROUTER_ADDRESS",
+      "dvs_configs": {
+        "$CHAIN_ID": {
+          "chain_id": $SERVICE_CHAIN_ID,
+          "rpc_url": "$SERVICE_CHAIN_RPC_URL",
+          "operator_info_provider": "$DVS_OPERATOR_INFO_PROVIDER",
+          "operator_key_manager": "$DVS_OPERATOR_KEY_MANAGER",
+          "central_scheduler": "$DVS_CENTRAL_SCHEDULER",
+          "operator_index_manager": "$DVS_OPERATOR_INDEX_MANAGER"
+        }
+      }
+    }
+}
+EOF
+
+cat $PELLDVS_HOME/config/interactor_config.json
 }
 
 
