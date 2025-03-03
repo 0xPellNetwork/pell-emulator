@@ -52,14 +52,9 @@ function init_pelldvs_config {
   ## FIXME: operator_bls_private_key_store_path should be in the config template.
   ## FIXME: don't use absolute path for key
   update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
-
-  ## FIXME: operator_ecdsa_private_key_store_path should be in the config template.
-  ## FIXME: don't use absolute path for key
   update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
 
-  # TODO(jimmy): remove `interfactor_config_path` after upgrade pelldvs to 0.2.2+
-	update-config interactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
-	update-config interfactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
+  update-config interactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
 
   DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
   DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)

@@ -38,20 +38,11 @@ function update_pelldvs_config {
   PELL_DVS_DIRECTORY=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDVSDirectory-Proxy.json" | jq -r .address)
   REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
 
-  update-config rpc_url "$ETH_RPC_URL"
-  update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
-
-  ## FIXME: operator_bls_private_key_store_path should be in the config template.
   ## FIXME: don't use absolute path for key
   update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
-
-  ## FIXME: operator_ecdsa_private_key_store_path should be in the config template.
-  ## FIXME: don't use absolute path for key
   update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
 
-  # TODO(jimmy): remove `interfactor_config_path` after upgrade pelldvs to 0.2.2+
 	update-config interactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
-	update-config interfactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
 
   DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
   DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
@@ -101,21 +92,22 @@ function setup_admin_key {
   export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 }
 
-# TODO(jimmy): remove --from flag, it is not needed for this command
-# TODO(jimmy): remove --chain-id flag, it's can be get from DVSRPCClient
 function register_chain_to_pell() {
-    REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
-    DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
-    pelldvs client dvs register-chain-to-pell \
-        --home $PELLDVS_HOME \
-        --from admin \
-        --rpc-url $ETH_RPC_URL \
-        --registry-router "$REGISTRY_ROUTER_ADDRESS" \
-        --chain-id 1337 \
-        --central-scheduler "$DVS_CENTRAL_SCHEDULER" \
-        --dvs-rpc-url $ETH_RPC_URL \
-        --dvs-from admin \
-        --approver-key-name admin
+  set -x
+
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  pelldvs client dvs register-chain-to-pell \
+      --home $PELLDVS_HOME \
+      --rpc-url $ETH_RPC_URL \
+      --registry-router "$REGISTRY_ROUTER_ADDRESS" \
+      --central-scheduler "$DVS_CENTRAL_SCHEDULER" \
+      --dvs-rpc-url $ETH_RPC_URL \
+      --dvs-from admin \
+      --approver-key-name admin
+
+  set +e
+  set +x
 }
 
 function show_supported_chain() {
