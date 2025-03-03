@@ -1,4 +1,4 @@
-FROM golang:1.22-bullseye AS build-pelldvs
+FROM golang:1.23-bullseye AS build-pelldvs
 
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
