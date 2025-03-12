@@ -9,6 +9,7 @@ type ContractAddress struct {
 	PellDelegationManager   string `json:"PellDelegationManager"`
 	PellRegistryRouter      string `json:"PellRegistryRouter"`
 	PellRegistryInteractor  string `json:"PellRegistryInteractor"`
+	PellStrategyManager     string `json:"PellStrategyManager"`
 	PellStakeRegistryRouter string `json:"-"`
 
 	// staking evm
@@ -26,9 +27,11 @@ type ContractAddress struct {
 var DefaultContractAddress = func() *ContractAddress {
 	return &ContractAddress{
 		// pell evm
-		PellDelegationManager:  "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
-		PellRegistryRouter:     "0x3E69aeCb6a5abAc2D87d6707649E2fB0173ee2Da",
-		PellRegistryInteractor: "0x922D6956C99E12DFeB3224DEA977D0939758A1Fe",
+		PellDelegationManager:   "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+		PellRegistryRouter:      "0x3E69aeCb6a5abAc2D87d6707649E2fB0173ee2Da",
+		PellRegistryInteractor:  "0x922D6956C99E12DFeB3224DEA977D0939758A1Fe",
+		PellStrategyManager:     "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
+		PellStakeRegistryRouter: "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
 
 		// staking evm
 		StakingStrategyManager:   "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",

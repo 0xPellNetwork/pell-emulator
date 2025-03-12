@@ -23,7 +23,7 @@ type typesBinidngs struct {
 	// pell evm
 	PellDelegationManager   *pelldelegationmanager.PellDelegationManager
 	PellRegistryRouter      *registryrouter.RegistryRouter
-	PellStrategyManager     pellstrategymanager.PellStrategyManager
+	PellStrategyManager     *pellstrategymanager.PellStrategyManager
 	PellRegistryInteractor  *registryinteractor.RegistryInteractor
 	PellStakeRegistryRouter *stakeregistryrouter.StakeRegistryRouter
 
@@ -156,13 +156,23 @@ func NewRPCBindings(rpcClient eth.Client, contractAddress *config.ContractAddres
 		return nil, err
 	}
 
-	// pell evm PellStrategyManager
+	// pell evm PellRegistryRouter
 	rpcBds.PellRegistryRouter, err = registryrouter.NewRegistryRouter(
 		gethcommon.HexToAddress(contractAddress.PellRegistryRouter),
 		thisClient,
 	)
 	if err != nil {
 		logger.Error("Failed to instantiate a RegistryRouter contract", "error", err)
+		return nil, err
+	}
+
+	// pell evm PellStrategyManager
+	rpcBds.PellStrategyManager, err = pellstrategymanager.NewPellStrategyManager(
+		gethcommon.HexToAddress(contractAddress.PellStrategyManager),
+		thisClient,
+	)
+	if err != nil {
+		logger.Error("Failed to instantiate a PellStrategyManager contract", "error", err)
 		return nil, err
 	}
 
@@ -175,10 +185,6 @@ func NewRPCBindings(rpcClient eth.Client, contractAddress *config.ContractAddres
 	if err != nil {
 		logger.Error("Failed to instantiate a DelegationManager contract", "error", err)
 		return nil, err
-	}
-
-	if rpcBds.StakingDelegationManager == nil {
-		return nil, errors.New("Failed to instantiate a DelegationManager contract")
 	}
 
 	// try to update DVS contract address
