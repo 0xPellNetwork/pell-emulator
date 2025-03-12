@@ -110,6 +110,9 @@ linters-settings:
           - github.com/stretchr/testify/assert
           - github.com/stretchr/testify/require
           - github.com/rs/zerolog
+          - gopkg.in/yaml.v3
+          - gotest.tools/v3/assert
+          - golang.org/x/sync/errgroup
       test:
         files:
           - "$test"
@@ -147,6 +150,9 @@ linters-settings:
           - github.com/prometheus/client_golang/prometheus/testutil
           - github.com/stretchr/testify/assert
           - github.com/stretchr/testify/require
+          - gopkg.in/yaml.v3
+          - gotest.tools/v3/assert
+          - golang.org/x/sync/errgroup
   revive:
     enable-all-rules: true
     rules:
