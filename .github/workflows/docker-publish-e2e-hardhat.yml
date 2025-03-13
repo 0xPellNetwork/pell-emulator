@@ -8,13 +8,13 @@ on:
         required: false
         default: "latest"
       contract_version:
-        description: 'Contracts version (example: v0.4.4), checkout at price-oracle-dvs'
+        description: 'Contracts version (example: v0.2.32), checkout at pell-middleware-contracts'
         required: true
 
 jobs:
   build_and_publish:
     name: Build
-    runs-on: ["self-hosted", "Linux", "X64", "ci"]
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
@@ -52,7 +52,6 @@ jobs:
           file: ./docker/contracts/Dockerfile
           push: true
           build-args: |
-            GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
             CONTRACT_VERSION=${{ github.event.inputs.contract_version }}
           tags: |
             pellnetwork/pell-emulator-e2e-hardhat:${{ env.TAG }}
