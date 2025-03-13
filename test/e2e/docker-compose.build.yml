@@ -10,6 +10,10 @@ services:
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
         - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.2.32}
+      tags:
+        - pellnetwork/pell-emulator-e2e-hardhat:${CONTRACT_VERSION:-latest}
+      secrets:
+        - github_token
   emulator:
     build:
       context: ../..
@@ -19,3 +23,9 @@ services:
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
         - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.2.2}
+      secrets:
+        - github_token
+
+secrets:
+  github_token:
+    environment: GITHUB_TOKEN
