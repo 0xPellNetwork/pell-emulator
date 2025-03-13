@@ -3,10 +3,6 @@ name: Docker Publish E2E Hardhat
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Docker image tag (default: latest)'
-        required: false
-        default: "latest"
       contract_version:
         description: 'Contracts version (example: v0.2.32), checkout at pell-middleware-contracts'
         required: true
@@ -15,6 +11,7 @@ jobs:
   build_and_publish:
     name: Build
     runs-on: ubuntu-latest
+    environment: e2e-docker
     permissions:
       packages: write
       contents: read
@@ -28,15 +25,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Set Docker Tag
-        id: tag
+      - name: Set CONTRACT_VERSION env
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "TAG=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          elif [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+            echo "CONTRACT_VERSION=${{ github.event.inputs.contract_version }}" >> $GITHUB_ENV
           else
-            echo "TAG=latest" >> $GITHUB_ENV
+            echo "CONTRACT_VERSION=v0.2.32" >> $GITHUB_ENV
           fi
 
       - name: Login to Docker Hub
@@ -49,12 +43,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./test/e2e
-          file: ./docker/contracts/Dockerfile
+          file: ./test/e2e/docker/contracts/Dockerfile
           push: true
           build-args: |
-            CONTRACT_VERSION=${{ github.event.inputs.contract_version }}
+            CONTRACT_VERSION=${{ env.CONTRACT_VERSION }}
           tags: |
-            pellnetwork/pell-emulator-e2e-hardhat:${{ env.TAG }}
+            pellnetwork/pell-emulator-e2e-hardhat:${{ env.CONTRACT_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           secrets: |
