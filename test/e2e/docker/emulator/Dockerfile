@@ -3,13 +3,13 @@ FROM golang:1.23-bullseye AS build-pelldvs
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 
+RUN --mount=type=secret,id=github_token \
+    if [ ! -s /run/secrets/github_token ]; then echo "github token is not set via secrets" >&2; exit 1; fi; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+
 WORKDIR /app
 
 ARG DEBUG_ENABLED
-ARG GITHUB_TOKEN
-RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-
 ARG PELLDVS_VERSION
 RUN git clone https://github.com/0xPellNetwork/pelldvs.git -b $PELLDVS_VERSION --depth 1
 # Build pelldvs
@@ -23,9 +23,9 @@ FROM golang:1.23-bullseye AS build-emulator
 ## Setup env
 WORKDIR /app/emulator
 
-ARG GITHUB_TOKEN
-RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+RUN --mount=type=secret,id=github_token \
+    if [ ! -s /run/secrets/github_token ]; then echo "github token is not set via secrets" >&2; exit 1; fi; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
 
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target="/go/pkg/mod" \
