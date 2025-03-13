@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./test/e2e
-          file: ./test/docker/contracts/Dockerfile
+          file: ./test/e2e/docker/contracts/Dockerfile
           push: true
           build-args: |
             CONTRACT_VERSION=${{ env.CONTRACT_VERSION }}
