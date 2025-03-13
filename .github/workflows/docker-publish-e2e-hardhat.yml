@@ -1,6 +1,8 @@
 name: Docker Publish E2E Hardhat
 
 on:
+  push:
+    branches: [ "test-publish-docker-e2e-image/**" ]
   workflow_dispatch:
     inputs:
       version:
@@ -38,6 +40,13 @@ jobs:
           else
             echo "TAG=latest" >> $GITHUB_ENV
           fi
+      - name: Set CONTRACT_VERSION env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "CONTRACT_VERSION=${{ github.event.inputs.contract_version }}" >> $GITHUB_ENV
+          else
+            echo "CONTRACT_VERSION=v0.2.32" >> $GITHUB_ENV
+          fi
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -49,10 +58,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./test/e2e
-          file: ./docker/contracts/Dockerfile
+          file: ./test/docker/contracts/Dockerfile
           push: true
           build-args: |
-            CONTRACT_VERSION=${{ github.event.inputs.contract_version }}
+            CONTRACT_VERSION=${{ env.CONTRACT_VERSION }}
           tags: |
             pellnetwork/pell-emulator-e2e-hardhat:${{ env.TAG }}
           cache-from: type=gha
