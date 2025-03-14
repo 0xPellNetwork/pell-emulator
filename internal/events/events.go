@@ -99,6 +99,18 @@ func GetAllEvents(chainID *big.Int,
 	)
 	eventList = append(eventList, eventRegistryRouterSyncAddPools)
 
+	//nolint:stylecheck
+	var eventEventPellDelegationManagerOperatorSharesIncreased *EventPellDelegationManagerOperatorSharesIncreased = NewEventPellDelegationManagerOperatorSharesIncreased(
+		chainID, rpcClient, rpcBindings, wsClient, wsBindings, txMgr, logger,
+	)
+	eventList = append(eventList, eventEventPellDelegationManagerOperatorSharesIncreased)
+
+	//nolint:stylecheck
+	var eventEventPellDelegationManagerOperatorSharesDecreased *EventPellDelegationManagerOperatorSharesDecreased = NewEventPellDelegationManagerOperatorSharesDecreased(
+		chainID, rpcClient, rpcBindings, wsClient, wsBindings, txMgr, logger,
+	)
+	eventList = append(eventList, eventEventPellDelegationManagerOperatorSharesDecreased)
+
 	return eventList
 
 }
