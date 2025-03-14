@@ -112,5 +112,4 @@ func GetAllEvents(chainID *big.Int,
 	eventList = append(eventList, eventEventPellDelegationManagerOperatorSharesDecreased)
 
 	return eventList
-
 }

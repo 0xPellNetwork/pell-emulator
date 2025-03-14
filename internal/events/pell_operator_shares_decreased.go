@@ -32,7 +32,7 @@ func NewEventPellDelegationManagerOperatorSharesDecreased(
 	logger log.Logger) *EventPellDelegationManagerOperatorSharesDecreased {
 
 	eventName := "OperatorSharesDecreased"
-	contractName := "PellDelegationManager"
+	contractName := ContractNamePellDelegationManager
 	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased)
 
 	var res = &EventPellDelegationManagerOperatorSharesDecreased{
