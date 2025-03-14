@@ -38,7 +38,7 @@ services:
         max-file: "3"
 
   hardhat:
-    image: pellnetwork/pell-emulator-e2e-hardhat:${CONTRACT_VERSION:-latest}
+    image: pellnetwork/pell-emulator-e2e-hardhat:${CONTRACT_VERSION:-v0.2.32}
     command: [ "bash", "./scripts/docker_init.sh" ]
     environment:
       - LOCALHOST_URL=http://eth:8545
