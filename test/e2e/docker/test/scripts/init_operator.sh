@@ -181,6 +181,8 @@ function stake_and_delegate_to_operator() {
   echo -e "\n\n"
   logt "Query Operator Shares"
 
+  sleep 10
+
   cast call $DELEGATION_MNAGER \
     "getOperatorShares(address,address[])(uint256[])" \
     $OPERATOR_ADDRESS \
