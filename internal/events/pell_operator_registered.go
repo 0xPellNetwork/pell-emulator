@@ -33,7 +33,7 @@ func NewEventPellDelegationManagerOperatorRegistered(
 	logger log.Logger) *EventPellDelegationManagerOperatorRegistered {
 
 	eventName := "OperatorRegistered"
-	contractName := "PellDelegationManager"
+	contractName := ContractNamePellDelegationManager
 
 	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorRegistered)
 

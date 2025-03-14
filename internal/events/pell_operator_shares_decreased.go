@@ -17,25 +17,25 @@ import (
 	"github.com/0xPellNetwork/pell-emulator/libs/utils"
 )
 
-type EventPellDelegationManagerOperatorSharesIncreased struct {
+type EventPellDelegationManagerOperatorSharesDecreased struct {
 	BaseEvent
-	evtChan chan *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased
+	evtChan chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased
 }
 
-func NewEventPellDelegationManagerOperatorSharesIncreased(
+func NewEventPellDelegationManagerOperatorSharesDecreased(
 	chainID *big.Int,
 	rpcClient eth.Client,
 	rpcBindings *chains.TypesRPCBindings,
 	wsClient eth.Client,
 	wsBindings *chains.TypesWsBindings,
 	txMgr txmgr.TxManager,
-	logger log.Logger) *EventPellDelegationManagerOperatorSharesIncreased {
+	logger log.Logger) *EventPellDelegationManagerOperatorSharesDecreased {
 
-	eventName := "OperatorSharesIncreased"
+	eventName := "OperatorSharesDecreased"
 	contractName := ContractNamePellDelegationManager
-	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased)
+	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased)
 
-	var res = &EventPellDelegationManagerOperatorSharesIncreased{
+	var res = &EventPellDelegationManagerOperatorSharesDecreased{
 		BaseEvent: BaseEvent{
 			EventName:    eventName,
 			Contractname: contractName,
@@ -52,9 +52,9 @@ func NewEventPellDelegationManagerOperatorSharesIncreased(
 	return res
 }
 
-func (e *EventPellDelegationManagerOperatorSharesIncreased) process(
+func (e *EventPellDelegationManagerOperatorSharesDecreased) process(
 	ctx context.Context,
-	event *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased,
+	event *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased,
 ) error {
 	e.logger.Info("received event",
 		"ChainId", event.ChainId,
@@ -97,13 +97,13 @@ func (e *EventPellDelegationManagerOperatorSharesIncreased) process(
 	return nil
 }
 
-func (e *EventPellDelegationManagerOperatorSharesIncreased) Init(ctx context.Context) error {
+func (e *EventPellDelegationManagerOperatorSharesDecreased) Init(ctx context.Context) error {
 	e.logger.Info("init for events")
-	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased)
+	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased)
 	chainIDList := make([]*big.Int, 0)
 	operatorAddressList := make([]gethcommon.Address, 0)
 
-	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorSharesIncreased(&bind.WatchOpts{}, eventCh, chainIDList, operatorAddressList)
+	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorSharesDecreased(&bind.WatchOpts{}, eventCh, chainIDList, operatorAddressList)
 	if err != nil {
 		e.logger.Error("Failed to subscribe to events", "error", err)
 		return err
@@ -113,7 +113,7 @@ func (e *EventPellDelegationManagerOperatorSharesIncreased) Init(ctx context.Con
 	return nil
 }
 
-func (e *EventPellDelegationManagerOperatorSharesIncreased) Listen(ctx context.Context) error {
+func (e *EventPellDelegationManagerOperatorSharesDecreased) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
 
 	go func(ctx context.Context) {

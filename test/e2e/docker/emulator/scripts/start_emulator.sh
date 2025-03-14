@@ -9,6 +9,7 @@ logt() {
 
 function hardhat_healthcheck {
   set +e
+  set +x
   while true; do
     ssh hardhat "test -f /root/contracts_deployed_completed"
     if [ $? -eq 0 ]; then
@@ -19,6 +20,7 @@ function hardhat_healthcheck {
     sleep 1
   done
   set -e
+  set -x
 }
 
 export REGISTRY_ROUTER_ADDRESS_FILE="/root/RegistryRouterAddress.json"
