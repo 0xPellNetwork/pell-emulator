@@ -35,7 +35,6 @@ func NewEventCentralSchedulerToPell(
 	logger log.Logger,
 	hooks ...func(*RegistryInteractorRegisterToPellEvents) error,
 ) *EventCentralSchedulerToPell {
-
 	eventName := "CentralSchedulerEvent"
 	contractName := "PellRegistryInteractor"
 
@@ -43,20 +42,23 @@ func NewEventCentralSchedulerToPell(
 
 	var res = &EventCentralSchedulerToPell{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
+			srcEVM:       EVMDVS,
+			eventName:    eventName,
+			contractname: contractName,
 			chainID:      chainID,
 			wsClient:     wsClient,
 			rpcClient:    rpcClient,
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMPell, "PellRegistryRouter", "AddSupportedChain"),
+			},
 		},
 		evtCh:                     eventCh,
 		hooksAfterGetAllEventData: nil,
 	}
-
+	res.setLogger(logger)
 	return res
 }
 

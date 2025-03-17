@@ -16,8 +16,8 @@ function hardhat_healthcheck {
       echo "✅ Contracts deployed, proceeding to the next step..."
       break
     fi
-    echo "⌛️ Contracts not deployed, retrying in 1 second..."
-    sleep 1
+    echo "⌛️ Contracts not deployed, retrying in 2 second..."
+    sleep 2
   done
   set -e
   set -x

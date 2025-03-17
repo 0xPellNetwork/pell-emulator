@@ -2,7 +2,9 @@ package events
 
 import (
 	"context"
+	"fmt"
 	"math/big"
+	"strings"
 
 	gethevent "github.com/ethereum/go-ethereum/event"
 
@@ -18,8 +20,9 @@ type IEvents interface {
 }
 
 type BaseEvent struct {
-	EventName    string
-	Contractname string
+	srcEVM       string
+	eventName    string
+	contractname string
 	logger       log.Logger
 	chainID      *big.Int
 	wsClient     eth.Client
@@ -28,6 +31,36 @@ type BaseEvent struct {
 	rpcBindings  *chains.TypesRPCBindings
 	txMgr        txmgr.TxManager
 	evtSub       gethevent.Subscription
+	targets      []EventTargetInfo
+}
+
+func (be *BaseEvent) setLogger(logger log.Logger) log.Logger {
+	targetsInfos := make([]string, 0, len(be.targets))
+	for _, target := range be.targets {
+		targetsInfos = append(targetsInfos, fmt.Sprintf("target_%s:%s:%s", target.EVM, target.Contract, target.Method))
+	}
+	be.logger = logger.With(
+		"event", be.eventName,
+		"srcEvm", be.srcEVM,
+		"srcContractName", be.srcEVM,
+		"targets", strings.Join(targetsInfos, ","),
+	)
+
+	return be.logger
+}
+
+type EventTargetInfo struct {
+	EVM      string
+	Contract string
+	Method   string
+}
+
+func newTarget(evm string, contract string, method string) EventTargetInfo {
+	return EventTargetInfo{
+		EVM:      evm,
+		Contract: contract,
+		Method:   method,
+	}
 }
 
 func GetAllEvents(chainID *big.Int,

@@ -99,5 +99,4 @@ print_new_line
 
 logt operator shares
 asset_gt $OPERATOR_STAKE_STATUS 0
-
 print_new_line

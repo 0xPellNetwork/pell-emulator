@@ -39,18 +39,22 @@ func NewEventPellDelegationManagerOperatorRegistered(
 
 	var res = &EventPellDelegationManagerOperatorRegistered{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
+			srcEVM:       EVMPell,
+			eventName:    eventName,
+			contractname: contractName,
 			chainID:      chainID,
 			wsClient:     wsClient,
 			rpcClient:    rpcClient,
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMDVS, "StakingDelegationManager", "SyncRegisterAsOperator"),
+			},
 		},
 		evtCh: eventCh,
 	}
+	res.setLogger(logger)
 	return res
 }
 

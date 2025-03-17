@@ -2,13 +2,13 @@ package events
 
 import (
 	"context"
-	"errors"
 	"math/big"
 	"time"
 
 	"github.com/0xPellNetwork/contracts/pkg/contracts/pell_evm/pelldelegationmanager.sol"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	gethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
 
 	"github.com/0xPellNetwork/pell-emulator/internal/chains"
 	"github.com/0xPellNetwork/pell-emulator/libs/chains/eth"
@@ -37,18 +37,22 @@ func NewEventPellDelegationManagerOperatorSharesIncreased(
 
 	var res = &EventPellDelegationManagerOperatorSharesIncreased{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
+			srcEVM:       EVMPell,
+			eventName:    eventName,
+			contractname: contractName,
 			chainID:      chainID,
 			wsClient:     wsClient,
 			rpcClient:    rpcClient,
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMService, "ServiceOmniOperatorShareManager", "BatchSyncDelegatedShares"),
+			},
 		},
 		evtChan: eventCh,
 	}
+	res.setLogger(logger)
 	return res
 }
 
@@ -99,11 +103,11 @@ func (e *EventPellDelegationManagerOperatorSharesIncreased) process(
 
 func (e *EventPellDelegationManagerOperatorSharesIncreased) Init(ctx context.Context) error {
 	e.logger.Info("init for events")
-	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesIncreased)
-	chainIDList := make([]*big.Int, 0)
-	operatorAddressList := make([]gethcommon.Address, 0)
-
-	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorSharesIncreased(&bind.WatchOpts{}, eventCh, chainIDList, operatorAddressList)
+	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorSharesIncreased(&bind.WatchOpts{},
+		e.evtChan,
+		nil,
+		nil,
+	)
 	if err != nil {
 		e.logger.Error("Failed to subscribe to events", "error", err)
 		return err

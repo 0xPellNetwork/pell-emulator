@@ -29,15 +29,16 @@ func NewEventStakingStakerUndelegated(
 	wsClient eth.Client,
 	wsBindings *chains.TypesWsBindings,
 	txMgr txmgr.TxManager,
-	logger log.Logger) *EventStakingStakerUndelegated {
-
+	logger log.Logger,
+) *EventStakingStakerUndelegated {
 	eventName := "StakerUndelegated"
 	contractName := ContractNameStakingDelegationManager
 	eventCh := make(chan *delegationmanager.DelegationManagerStakerUndelegated)
 	var res = &EventStakingStakerUndelegated{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
+			srcEVM:       EVMStaking,
+			eventName:    eventName,
+			contractname: contractName,
 			logger:       logger.With("event", eventName, "contract", contractName),
 			chainID:      chainID,
 			wsClient:     wsClient,
@@ -45,9 +46,13 @@ func NewEventStakingStakerUndelegated(
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMPell, "PellDelegationManager", "SyncUndelegateState"),
+			},
 		},
 		evtCh: eventCh,
 	}
+	res.setLogger(logger)
 	return res
 }
 
@@ -76,7 +81,6 @@ func (e *EventStakingStakerUndelegated) process(
 	}
 
 	e.logger.Info("tx successfully included", "txHash", receipt.TxHash.String())
-
 	return nil
 }
 

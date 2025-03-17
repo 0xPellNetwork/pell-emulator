@@ -3,7 +3,6 @@ package events
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -33,25 +32,29 @@ func NewEventRegistryRouterSyncAddPools(
 	logger log.Logger,
 	hooks ...func(*RegistryInteractorRegisterToPellEvents) error,
 ) *EventRegistryRouterSyncAddPools {
-
 	eventName := "SyncAddPools"
 	contractName := ContractNamePellRegistryRouter
 	eventCh := make(chan *stakeregistryrouter.StakeRegistryRouterSyncAddPools)
 
 	var res = &EventRegistryRouterSyncAddPools{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
+			srcEVM:       EVMPell,
+			eventName:    eventName,
+			contractname: contractName,
 			chainID:      chainID,
 			wsClient:     wsClient,
 			rpcClient:    rpcClient,
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMDVS, "DVSOperatorStakeManager", "SyncAddPools"),
+			},
 		},
 		evtCh: eventCh,
 	}
+
+	res.logger = res.setLogger(logger)
 
 	return res
 }
@@ -60,11 +63,10 @@ func (e *EventRegistryRouterSyncAddPools) process(
 	ctx context.Context,
 	event *stakeregistryrouter.StakeRegistryRouterSyncAddPools,
 ) error {
-
-	e.logger.Info("Received event: ", "event", fmt.Sprintf("%+v", event))
-
-	// covert params
-
+	e.logger.Info("received event: ",
+		"groupNumber", event.GroupNumber,
+		"poolParams", event.PoolParams,
+	)
 	groupNumber := event.GroupNumber
 	strategyParams := make([]operatorstakemanager.IOperatorStakeManagerPoolParams, len(event.PoolParams))
 	for i, strategyParam := range event.PoolParams {
@@ -94,14 +96,12 @@ func (e *EventRegistryRouterSyncAddPools) process(
 		"txHash", receipt.TxHash.String(),
 		"toContract", "DVSOperatorStakeManager.SyncAddStrategies",
 	)
-
 	return nil
 }
 
 func (e *EventRegistryRouterSyncAddPools) Init(ctx context.Context) error {
 	e.logger.Info("init for events")
-	eventCh := make(chan *stakeregistryrouter.StakeRegistryRouterSyncAddPools)
-	sub, err := e.wsBindings.PellStakeRegistryRouter.WatchSyncAddPools(&gethbind.WatchOpts{}, eventCh, nil)
+	sub, err := e.wsBindings.PellStakeRegistryRouter.WatchSyncAddPools(&gethbind.WatchOpts{}, e.evtCh, nil)
 	if err != nil {
 		e.logger.Error("Failed to subscribe to events", "error", err)
 		return err
@@ -134,6 +134,5 @@ func (e *EventRegistryRouterSyncAddPools) Listen(ctx context.Context) error {
 			}
 		}
 	}(ctx)
-
 	return nil
 }

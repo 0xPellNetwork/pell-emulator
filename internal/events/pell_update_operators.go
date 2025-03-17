@@ -38,8 +38,9 @@ func NewEventRegistryRouterSyncUpdateOperators(
 	eventCh := make(chan *registryrouter.RegistryRouterSyncUpdateOperators)
 	var res = &EventRegistryRouterSyncUpdateOperators{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
+			srcEVM:       EVMPell,
+			eventName:    eventName,
+			contractname: contractName,
 			logger:       logger.With("event", eventName, "contract", contractName),
 			chainID:      chainID,
 			wsClient:     wsClient,
@@ -47,10 +48,13 @@ func NewEventRegistryRouterSyncUpdateOperators(
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMDVS, "DVSCentralScheduler", "SyncUpdateOperators"),
+			},
 		},
 		evtCh: eventCh,
 	}
-
+	res.setLogger(logger)
 	return res
 }
 

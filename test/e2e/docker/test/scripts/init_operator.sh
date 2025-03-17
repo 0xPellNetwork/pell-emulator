@@ -155,13 +155,13 @@ function stake_and_delegate_to_operator() {
     --rpc-url $ETH_RPC_URL
 
   logt "Query Strategy Shares"
-
   cast call $STRTEGY_MANAGER_ADDRESS \
     "stakerStrategyShares(address,address)(uint256)" \
     $TestDeployerEvmAddr \
     $STBTC_STRATEGY_ADDRESS \
     --rpc-url $ETH_RPC_URL
 
+  logt
   logt "Stake to Strategy Done"
 
   sleep 5
@@ -170,6 +170,7 @@ function stake_and_delegate_to_operator() {
   PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
   OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 
+  logt "Delegate to Operator"
   cast send $DELEGATION_MNAGER \
     "delegateTo(address,(bytes,uint256),bytes32)" \
     $OPERATOR_ADDRESS \
@@ -180,15 +181,16 @@ function stake_and_delegate_to_operator() {
 
   echo -e "\n\n"
   logt "Query Operator Shares"
-
   sleep 10
 
+  logt "Query Operator Shares from Delegation Manager getOperatorShares"
   cast call $DELEGATION_MNAGER \
     "getOperatorShares(address,address[])(uint256[])" \
     $OPERATOR_ADDRESS \
     "[$STBTC_STRATEGY_ADDRESS]" \
     --rpc-url $ETH_RPC_URL
 
+  logt "Query Operator Shares from Pell Delegation Manager getOperatorShares"
   cast call $PELL_DELEGATION_MNAGER \
     "getOperatorShares(address,(uint256,address)[])(uint256[])" \
     $OPERATOR_ADDRESS \
@@ -201,21 +203,34 @@ function stake_and_delegate_to_operator() {
   REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
   STAKE_REGISTRY_ROUTER=$(cast call $REGISTRY_ROUTER_ADDRESS "stakeRegistryRouter()(address)" --rpc-url $ETH_RPC_URL)
 
+  logt "Query minimum stake for group 0"
   cast call $STAKE_REGISTRY_ROUTER \
     "minimumStakeForGroup(uint8)(uint96)" \
     0 \
     --rpc-url $ETH_RPC_URL
 
   logt "Query weight of operator from Pell Chain and Service Chain"
-  OPERATOR_STAKE_MNAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStakeManager-Proxy.json" | jq -r .address)
+  sleep 10
 
+
+  logt "Query weight of operator from STAKE_REGISTRY_ROUTER"
   cast call $STAKE_REGISTRY_ROUTER \
-    "weightOfOperatorForGroup(uint8,address)(uint96)" \
+    "weightOfOperatorForGroup(uint8 groupNumber, address operator)(uint96)" \
     0 $OPERATOR_ADDRESS \
     --rpc-url $ETH_RPC_URL
 
+  OMNI_OPERATOR_SHARES_MANAGER_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/OmniOperatorSharesManager-Proxy.json" | jq -r .address)
+  logt "Query weight of operator from OMNI_OPERATOR_SHARES_MANAGER_ADDRESS: $OMNI_OPERATOR_SHARES_MANAGER_ADDRESS"
+  cast call $OMNI_OPERATOR_SHARES_MANAGER_ADDRESS \
+    "getOperatorShares(address,(uint256,address)[])(uint256[])" \
+    $OPERATOR_ADDRESS \
+    "[(1337,$STBTC_STRATEGY_ADDRESS)]" \
+    --rpc-url $ETH_RPC_URL
+
+  OPERATOR_STAKE_MNAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStakeManager-Proxy.json" | jq -r .address)
+  logt "Query weight of operator from OPERATOR_STAKE_MNAGER"
   cast call $OPERATOR_STAKE_MNAGER \
-    "weightOfOperatorForGroup(uint8,address)(uint96)" \
+    "weightOfOperatorForGroup(uint8 groupNumber, address operator)(uint96)" \
     0 $OPERATOR_ADDRESS \
     --rpc-url $ETH_RPC_URL
 

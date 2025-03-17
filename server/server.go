@@ -28,16 +28,14 @@ func NewServer(
 	logger log.Logger,
 	port int,
 ) (*Server, error) {
-
 	bindings, err := chains.NewChainBindings(ctx, cfg, logger)
 	if err != nil {
 		logger.Error("Failed to create chain bindings", "error", err)
 		return nil, err
 	}
-
 	return &Server{
 		bindings: bindings,
-		logger:   logger.With("module", "server"),
+		logger:   logger,
 		port:     port,
 	}, nil
 }
@@ -179,7 +177,7 @@ func (s *Server) startEmulator(ctx context.Context) error {
 		go func() {
 			_ = event.Listen(ctx)
 		}()
-		s.logger.Info("event started", "event", event)
+		s.logger.Info("event started")
 	}
 
 	emulatorServerState.Enable()
