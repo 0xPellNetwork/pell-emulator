@@ -31,15 +31,14 @@ func NewEventStakingStakerDelegated(
 	txMgr txmgr.TxManager,
 	logger log.Logger,
 ) *EventStakingStakerDelegated {
-
 	eventName := "StakerDelegated"
 	contractName := ContractNameStakingDelegationManager
 	eventCh := make(chan *delegationmanager.DelegationManagerStakerDelegated)
-
 	var res = &EventStakingStakerDelegated{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
+			srcEVM:       EVMStaking,
+			eventName:    eventName,
+			contractname: contractName,
 			logger:       logger.With("event", eventName, "contract", contractName),
 			chainID:      chainID,
 			wsClient:     wsClient,
@@ -47,10 +46,13 @@ func NewEventStakingStakerDelegated(
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMPell, "PellDelegationManager", "SyncDelegateState"),
+			},
 		},
 		evtCh: eventCh,
 	}
-
+	res.setLogger(logger)
 	return res
 }
 
@@ -61,7 +63,6 @@ func (e *EventStakingStakerDelegated) process(
 		"Staker", event.Staker,
 		"Operator", event.Operator,
 	)
-
 	noSendTxOpts, err := e.txMgr.GetNoSendTxOpts()
 	if err != nil {
 		return err
@@ -80,7 +81,6 @@ func (e *EventStakingStakerDelegated) process(
 	}
 
 	e.logger.Info("tx successfully included", "txHash", receipt.TxHash.String())
-
 	return nil
 }
 

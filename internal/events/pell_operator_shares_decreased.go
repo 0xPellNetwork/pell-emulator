@@ -2,14 +2,13 @@ package events
 
 import (
 	"context"
-	"errors"
 	"math/big"
 	"time"
 
 	"github.com/0xPellNetwork/contracts/pkg/contracts/pell_evm/pelldelegationmanager.sol"
-	"github.com/0xPellNetwork/contracts/pkg/contracts/staking_evm/core/v3/delegationmanager.sol"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	gethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
 
 	"github.com/0xPellNetwork/pell-emulator/internal/chains"
 	"github.com/0xPellNetwork/pell-emulator/libs/chains/eth"
@@ -18,26 +17,25 @@ import (
 	"github.com/0xPellNetwork/pell-emulator/libs/utils"
 )
 
-type EventPellDelegationManagerOperatorRegistered struct {
+type EventPellDelegationManagerOperatorSharesDecreased struct {
 	BaseEvent
-	evtCh chan *pelldelegationmanager.PellDelegationManagerOperatorRegistered
+	evtChan chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased
 }
 
-func NewEventPellDelegationManagerOperatorRegistered(
+func NewEventPellDelegationManagerOperatorSharesDecreased(
 	chainID *big.Int,
 	rpcClient eth.Client,
 	rpcBindings *chains.TypesRPCBindings,
 	wsClient eth.Client,
 	wsBindings *chains.TypesWsBindings,
 	txMgr txmgr.TxManager,
-	logger log.Logger) *EventPellDelegationManagerOperatorRegistered {
+	logger log.Logger) *EventPellDelegationManagerOperatorSharesDecreased {
 
-	eventName := "OperatorRegistered"
+	eventName := "OperatorSharesDecreased"
 	contractName := ContractNamePellDelegationManager
+	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased)
 
-	eventCh := make(chan *pelldelegationmanager.PellDelegationManagerOperatorRegistered)
-
-	var res = &EventPellDelegationManagerOperatorRegistered{
+	var res = &EventPellDelegationManagerOperatorSharesDecreased{
 		BaseEvent: BaseEvent{
 			srcEVM:       EVMPell,
 			eventName:    eventName,
@@ -49,41 +47,47 @@ func NewEventPellDelegationManagerOperatorRegistered(
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
 			targets: []EventTargetInfo{
-				newTarget(EVMDVS, "StakingDelegationManager", "SyncRegisterAsOperator"),
+				newTarget(EVMService, "ServiceOmniOperatorShareManager", "BatchSyncDelegatedShares"),
 			},
 		},
-		evtCh: eventCh,
+		evtChan: eventCh,
 	}
 	res.setLogger(logger)
 	return res
 }
 
-func (e *EventPellDelegationManagerOperatorRegistered) process(
+func (e *EventPellDelegationManagerOperatorSharesDecreased) process(
 	ctx context.Context,
-	event *pelldelegationmanager.PellDelegationManagerOperatorRegistered,
+	event *pelldelegationmanager.PellDelegationManagerOperatorSharesDecreased,
 ) error {
 	e.logger.Info("received event",
+		"ChainId", event.ChainId,
 		"Operator", event.Operator,
-		"Details", event.OperatorDetails,
+		"Staker", event.Staker,
+		"Pool", event.Strategy,
+		"Shares", event.Shares,
 	)
 
 	// covert params
-	operator := event.Operator
-	details := delegationmanager.IDelegationManagerOperatorDetails{
-		DeprecatedEarningsReceiver: gethcommon.Address{},
-		DelegationApprover:         event.OperatorDetails.DelegationApprover,
-		StakerOptOutWindow:         event.OperatorDetails.StakerOptOutWindow,
-	}
+	var chainIDs []*big.Int
+	var operators []gethcommon.Address
+	var pools []gethcommon.Address
+	var shares []*big.Int
 
-	// TODO(jimmy): DeprecatedEarningsReceiver is not in the event, so it is set to the zero address.
+	chainIDs = append(chainIDs, event.ChainId)
+	operators = append(operators, event.Operator)
+	pools = append(pools, event.Strategy)
+	shares = append(shares, event.Shares)
 
 	noSendTxOpts, err := e.txMgr.GetNoSendTxOpts()
 	if err != nil {
 		return err
 	}
-	tx, err := e.rpcBindings.StakingDelegationManager.SyncRegisterAsOperator(noSendTxOpts,
-		operator,
-		details,
+	tx, err := e.rpcBindings.ServiceOmniOperatorShareManager.BatchSyncDelegatedShares(noSendTxOpts,
+		chainIDs,
+		operators,
+		pools,
+		shares,
 	)
 	if err != nil {
 		return err
@@ -94,13 +98,20 @@ func (e *EventPellDelegationManagerOperatorRegistered) process(
 	}
 	e.logger.Info("tx successfully included", "txHash", receipt.TxHash.String())
 
+	//updateOperatorsReceipt, err := e.updateOperators(ctx, operators)
+	//if err != nil {
+	//	return errors.Wrap(err, "failed to update operators")
+	//}
+	//e.logger.Info("update operators tx successfully included", "txHash", updateOperatorsReceipt.TxHash.String())
+
 	return nil
 }
 
-func (e *EventPellDelegationManagerOperatorRegistered) Init(ctx context.Context) error {
+func (e *EventPellDelegationManagerOperatorSharesDecreased) Init(ctx context.Context) error {
 	e.logger.Info("init for events")
-	operatorAddressList := make([]gethcommon.Address, 0)
-	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorRegistered(&bind.WatchOpts{}, e.evtCh, operatorAddressList)
+	sub, err := e.wsBindings.PellDelegationManager.WatchOperatorSharesDecreased(&bind.WatchOpts{},
+		e.evtChan, nil, nil,
+	)
 	if err != nil {
 		e.logger.Error("Failed to subscribe to events", "error", err)
 		return err
@@ -110,12 +121,12 @@ func (e *EventPellDelegationManagerOperatorRegistered) Init(ctx context.Context)
 	return nil
 }
 
-func (e *EventPellDelegationManagerOperatorRegistered) Listen(ctx context.Context) error {
+func (e *EventPellDelegationManagerOperatorSharesDecreased) Listen(ctx context.Context) error {
 	e.logger.Info("Listening for events")
 	go func(ctx context.Context) {
 		for {
 			select {
-			case event := <-e.evtCh:
+			case event := <-e.evtChan:
 				err := e.process(ctx, event)
 				if err != nil {
 					e.logger.Error("Failed to process to events:", "error", err)
@@ -126,7 +137,7 @@ func (e *EventPellDelegationManagerOperatorRegistered) Listen(ctx context.Contex
 			case <-ctx.Done():
 				e.logger.Info("received unsubscribe signal, shutting down...")
 				e.evtSub.Unsubscribe()
-				close(e.evtCh)
+				close(e.evtChan)
 				return
 			default:
 				//fmt.Println("Waiting for events...")

@@ -73,6 +73,9 @@ docker-emulator-rerun:
 docker-test-up:
 	docker compose run --rm test
 
+docker-test-up-without-rm:
+	docker compose run test
+
 docker-test-shell:
 	docker compose run --rm --entrypoint /bin/bash  test
 

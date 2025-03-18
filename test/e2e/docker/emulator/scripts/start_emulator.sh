@@ -9,16 +9,18 @@ logt() {
 
 function hardhat_healthcheck {
   set +e
+  set +x
   while true; do
     ssh hardhat "test -f /root/contracts_deployed_completed"
     if [ $? -eq 0 ]; then
       echo "✅ Contracts deployed, proceeding to the next step..."
       break
     fi
-    echo "⌛️ Contracts not deployed, retrying in 1 second..."
-    sleep 1
+    echo "⌛️ Contracts not deployed, retrying in 2 second..."
+    sleep 2
   done
   set -e
+  set -x
 }
 
 export REGISTRY_ROUTER_ADDRESS_FILE="/root/RegistryRouterAddress.json"

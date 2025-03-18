@@ -34,28 +34,30 @@ func NewEventRegistryRouterSyncCreateGroup(
 	eventName := "SyncCreateGroup"
 	contractName := ContractNamePellRegistryRouter
 	eventCh := make(chan *registryrouter.RegistryRouterSyncCreateGroup)
-
 	var res = &EventRegistryRouterSyncCreateGroup{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
+			srcEVM:       EVMPell,
+			eventName:    eventName,
+			contractname: contractName,
 			chainID:      chainID,
 			wsClient:     wsClient,
 			rpcClient:    rpcClient,
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMDVS, "DVSCentralScheduler", "SyncCreateGroup"),
+			},
 		},
 		evtCh: eventCh,
 	}
+	res.setLogger(logger)
 	return res
 }
 
 func (e *EventRegistryRouterSyncCreateGroup) process(
 	ctx context.Context, event *registryrouter.RegistryRouterSyncCreateGroup,
 ) error {
-
 	e.logger.Info("received event",
 		"GroupNumber", event.GroupNumber,
 		"OperatorSetParams", event.OperatorSetParams,
@@ -116,7 +118,6 @@ func (e *EventRegistryRouterSyncCreateGroup) Listen(ctx context.Context) error {
 		for {
 			select {
 			case event := <-e.evtCh:
-				e.logger.Info("here, received event")
 				err := e.process(ctx, event)
 				if err != nil {
 					e.logger.Error("Failed to process to events:", "error", err)

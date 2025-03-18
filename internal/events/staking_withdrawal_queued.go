@@ -29,16 +29,17 @@ func NewEventStakingWithdrawalQueued(
 	wsClient eth.Client,
 	wsBindings *chains.TypesWsBindings,
 	txMgr txmgr.TxManager,
-	logger log.Logger) *EventStakingWithdrawalQueued {
-
+	logger log.Logger,
+) *EventStakingWithdrawalQueued {
 	eventName := "StakingWithdrawalQueued"
 	contractName := ContractNameStakingDelegationManager
 	eventCh := make(chan *delegationmanager.DelegationManagerWithdrawalQueued)
 
 	var res = &EventStakingWithdrawalQueued{
 		BaseEvent: BaseEvent{
-			EventName:    eventName,
-			Contractname: contractName,
+			srcEVM:       EVMStaking,
+			eventName:    eventName,
+			contractname: contractName,
 			logger:       logger.With("event", eventName, "contract", contractName),
 			chainID:      chainID,
 			wsClient:     wsClient,
@@ -46,9 +47,13 @@ func NewEventStakingWithdrawalQueued(
 			wsBindings:   wsBindings,
 			rpcBindings:  rpcBindings,
 			txMgr:        txMgr,
+			targets: []EventTargetInfo{
+				newTarget(EVMPell, "PellDelegationManager", "SyncWithdrawalState"),
+			},
 		},
 		evtCh: eventCh,
 	}
+	res.setLogger(logger)
 	return res
 }
 
@@ -93,9 +98,7 @@ func (e *EventStakingWithdrawalQueued) process(
 
 func (e *EventStakingWithdrawalQueued) Init(ctx context.Context) error {
 	e.logger.Info("init for events")
-	eventCh := make(chan *delegationmanager.DelegationManagerWithdrawalQueued)
-
-	sub, err := e.wsBindings.StakingDelegationManager.WatchWithdrawalQueued(&bind.WatchOpts{}, eventCh)
+	sub, err := e.wsBindings.StakingDelegationManager.WatchWithdrawalQueued(&bind.WatchOpts{}, e.evtCh)
 	if err != nil {
 		e.logger.Error("Failed to subscribe to events", "error", err)
 		return err

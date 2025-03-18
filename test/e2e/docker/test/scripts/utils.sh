@@ -1,3 +1,10 @@
+function logt() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') $1"
+}
+
+function print_new_line {
+  echo -e "\n"
+}
 
 function load_defaults {
   export HARDHAT_CONTRACTS_PATH="/app/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
@@ -65,6 +72,27 @@ function get_operator_list {
   OPERATOR_INDEX_MANAGER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
   cast call "$OPERATOR_INDEX_MANAGER_ADDRESS" "getOperatorListAtBlockNumber(uint8,uint32)(bytes32[])" $GROUP_NUMBER $BLOCK_NUMBER
   cast call "$OPERATOR_INDEX_MANAGER_ADDRESS" "totalOperatorsForGroup(uint8)(uint32)" $GROUP_NUMBER
+}
+
+function show_operator_stake_status_at_pell_delegation_manager {
+  local OPERATOR_ADDRESS=$1
+
+  PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
+  STBTC_ERC20_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/stBTC-TestnetMintableERC20.json" | jq -r .address)
+  STRTEGY_MANAGER_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/StrategyManager-Proxy.json" | jq -r .address)
+  STBTC_STRATEGY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/stBTC-Strategy-Proxy.json" | jq -r .address)
+
+  output=$(cast call $PELL_DELEGATION_MNAGER \
+    "getOperatorShares(address,(uint256,address)[])(uint256[])" \
+    $OPERATOR_ADDRESS \
+    "[(1337,$STBTC_STRATEGY_ADDRESS)]" \
+    --rpc-url $ETH_RPC_URL --format-json)
+
+  logt "Operator stake status output: $output"
+
+  export OPERATOR_STAKE_STATUS=$(echo $output | jq -r '.[0]' |jq -r '.[0]')
+  echo "Operator stake status: $OPERATOR_STAKE_STATUS"
+  echo $OPERATOR_STAKE_STATUS
 }
 
 load_defaults

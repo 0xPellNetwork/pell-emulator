@@ -126,8 +126,6 @@ var RootCmd = &cobra.Command{
 			logger = log.NewTracingLogger(logger)
 		}
 
-		logger = logger.With("module", "main")
-
 		configFile := utils.GetHomeDir(cmd) + "/config/config.json"
 		if chainflags.EmulatorFlagConfigFile.Value != "" {
 			configFile = chainflags.EmulatorFlagConfigFile.Value
