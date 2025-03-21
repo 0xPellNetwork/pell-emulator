@@ -37,16 +37,16 @@ func NewEventStakingWithdrawalQueued(
 
 	var res = &EventStakingWithdrawalQueued{
 		BaseEvent: BaseEvent{
-			srcEVM:       EVMStaking,
-			eventName:    eventName,
-			contractname: contractName,
-			logger:       logger.With("event", eventName, "contract", contractName),
-			chainID:      chainID,
-			wsClient:     wsClient,
-			rpcClient:    rpcClient,
-			wsBindings:   wsBindings,
-			rpcBindings:  rpcBindings,
-			txMgr:        txMgr,
+			srcEVM:      EVMStaking,
+			eventName:   eventName,
+			srcContract: contractName,
+			logger:      logger.With("event", eventName, "contract", contractName),
+			chainID:     chainID,
+			wsClient:    wsClient,
+			rpcClient:   rpcClient,
+			wsBindings:  wsBindings,
+			rpcBindings: rpcBindings,
+			txMgr:       txMgr,
 			targets: []EventTargetInfo{
 				newTarget(EVMPell, "PellDelegationManager", "SyncWithdrawalState"),
 			},
