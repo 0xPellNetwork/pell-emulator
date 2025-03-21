@@ -38,15 +38,15 @@ func NewEventStakingDeposit(
 
 	var res = &EventStakingDeposit{
 		BaseEvent: BaseEvent{
-			srcEVM:       EVMStaking,
-			eventName:    eventName,
-			contractname: contractName,
-			chainID:      chainID,
-			wsClient:     wsClient,
-			rpcClient:    rpcClient,
-			wsBindings:   wsBindings,
-			rpcBindings:  rpcBindings,
-			txMgr:        txMgr,
+			srcEVM:      EVMStaking,
+			eventName:   eventName,
+			srcContract: contractName,
+			chainID:     chainID,
+			wsClient:    wsClient,
+			rpcClient:   rpcClient,
+			wsBindings:  wsBindings,
+			rpcBindings: rpcBindings,
+			txMgr:       txMgr,
 			targets: []EventTargetInfo{
 				newTarget(EVMPell, "PellStrategyManager", "SyncDepositState"),
 			},

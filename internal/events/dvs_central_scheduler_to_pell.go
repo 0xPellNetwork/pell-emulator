@@ -42,15 +42,15 @@ func NewEventCentralSchedulerToPell(
 
 	var res = &EventCentralSchedulerToPell{
 		BaseEvent: BaseEvent{
-			srcEVM:       EVMDVS,
-			eventName:    eventName,
-			contractname: contractName,
-			chainID:      chainID,
-			wsClient:     wsClient,
-			rpcClient:    rpcClient,
-			wsBindings:   wsBindings,
-			rpcBindings:  rpcBindings,
-			txMgr:        txMgr,
+			srcEVM:      EVMDVS,
+			eventName:   eventName,
+			srcContract: contractName,
+			chainID:     chainID,
+			wsClient:    wsClient,
+			rpcClient:   rpcClient,
+			wsBindings:  wsBindings,
+			rpcBindings: rpcBindings,
+			txMgr:       txMgr,
 			targets: []EventTargetInfo{
 				newTarget(EVMPell, "PellRegistryRouter", "AddSupportedChain"),
 			},

@@ -20,18 +20,18 @@ type IEvents interface {
 }
 
 type BaseEvent struct {
-	srcEVM       string
-	eventName    string
-	contractname string
-	logger       log.Logger
-	chainID      *big.Int
-	wsClient     eth.Client
-	rpcClient    eth.Client
-	wsBindings   *chains.TypesWsBindings
-	rpcBindings  *chains.TypesRPCBindings
-	txMgr        txmgr.TxManager
-	evtSub       gethevent.Subscription
-	targets      []EventTargetInfo
+	srcEVM      string
+	eventName   string
+	srcContract string
+	logger      log.Logger
+	chainID     *big.Int
+	wsClient    eth.Client
+	rpcClient   eth.Client
+	wsBindings  *chains.TypesWsBindings
+	rpcBindings *chains.TypesRPCBindings
+	txMgr       txmgr.TxManager
+	evtSub      gethevent.Subscription
+	targets     []EventTargetInfo
 }
 
 func (be *BaseEvent) setLogger(logger log.Logger) log.Logger {
@@ -42,7 +42,7 @@ func (be *BaseEvent) setLogger(logger log.Logger) log.Logger {
 	be.logger = logger.With(
 		"event", be.eventName,
 		"srcEvm", be.srcEVM,
-		"srcContractName", be.srcEVM,
+		"srcContract", be.srcContract,
 		"targets", strings.Join(targetsInfos, ","),
 	)
 

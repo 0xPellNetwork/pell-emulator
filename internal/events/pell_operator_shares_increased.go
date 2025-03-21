@@ -37,17 +37,17 @@ func NewEventPellDelegationManagerOperatorSharesIncreased(
 
 	var res = &EventPellDelegationManagerOperatorSharesIncreased{
 		BaseEvent: BaseEvent{
-			srcEVM:       EVMPell,
-			eventName:    eventName,
-			contractname: contractName,
-			chainID:      chainID,
-			wsClient:     wsClient,
-			rpcClient:    rpcClient,
-			wsBindings:   wsBindings,
-			rpcBindings:  rpcBindings,
-			txMgr:        txMgr,
+			srcEVM:      EVMPell,
+			eventName:   eventName,
+			srcContract: contractName,
+			chainID:     chainID,
+			wsClient:    wsClient,
+			rpcClient:   rpcClient,
+			wsBindings:  wsBindings,
+			rpcBindings: rpcBindings,
+			txMgr:       txMgr,
 			targets: []EventTargetInfo{
-				newTarget(EVMService, "ServiceOmniOperatorShareManager", "BatchSyncDelegatedShares"),
+				newTarget(EVMService, "ServiceOmniOperatorShareManager", "BatchSyncIncreaseDelegatedShares"),
 			},
 		},
 		evtChan: eventCh,

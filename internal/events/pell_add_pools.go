@@ -38,15 +38,15 @@ func NewEventRegistryRouterSyncAddPools(
 
 	var res = &EventRegistryRouterSyncAddPools{
 		BaseEvent: BaseEvent{
-			srcEVM:       EVMPell,
-			eventName:    eventName,
-			contractname: contractName,
-			chainID:      chainID,
-			wsClient:     wsClient,
-			rpcClient:    rpcClient,
-			wsBindings:   wsBindings,
-			rpcBindings:  rpcBindings,
-			txMgr:        txMgr,
+			srcEVM:      EVMPell,
+			eventName:   eventName,
+			srcContract: contractName,
+			chainID:     chainID,
+			wsClient:    wsClient,
+			rpcClient:   rpcClient,
+			wsBindings:  wsBindings,
+			rpcBindings: rpcBindings,
+			txMgr:       txMgr,
 			targets: []EventTargetInfo{
 				newTarget(EVMDVS, "DVSOperatorStakeManager", "SyncAddPools"),
 			},
