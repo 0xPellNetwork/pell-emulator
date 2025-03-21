@@ -83,7 +83,7 @@ func (e *EventPellDelegationManagerOperatorSharesIncreased) process(
 	if err != nil {
 		return err
 	}
-	tx, err := e.rpcBindings.ServiceOmniOperatorShareManager.BatchSyncDelegatedShares(noSendTxOpts,
+	tx, err := e.rpcBindings.ServiceOmniOperatorShareManager.BatchSyncIncreaseDelegatedShares(noSendTxOpts,
 		chainIDs,
 		operators,
 		pools,
